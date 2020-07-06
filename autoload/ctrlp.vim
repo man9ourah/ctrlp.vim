@@ -58,7 +58,7 @@ let [s:pref, s:bpref, s:opts, s:new_opts, s:lc_opts] =
 	\ 'buffer_func':           ['s:buffunc', {}],
 	\ 'by_filename':           ['s:byfname', 0],
 	\ 'custom_ignore':         ['s:usrign', s:ignore()],
-	\ 'default_input':         ['s:deftxt', 0],
+	\ 'default_input':         ['s:deftxt', 1],
 	\ 'dont_split':            ['s:nosplit', 'netrw'],
 	\ 'dotfiles':              ['s:showhidden', 0],
 	\ 'extensions':            ['s:extensions', []],
@@ -151,6 +151,8 @@ en
 let s:compare_lim = 3000
 
 let s:ficounts = {}
+
+let s:firstChar = 1
 
 let s:ccex = s:pref.'clear_cache_on_exit'
 
@@ -617,13 +619,13 @@ fu! s:BuildPrompt(upd)
 endf
 " - SetDefTxt() {{{1
 fu! s:SetDefTxt()
-	if s:deftxt == '0' || ( s:deftxt == 1 && !s:ispath ) | retu | en
-	let txt = s:deftxt
-	if !type(txt)
-		let path = s:crfpath.s:lash(s:crfpath)
-		let txt = txt && !stridx(path, s:dyncwd) ? ctrlp#rmbasedir([path])[0] : ''
-	en
-	let s:prompt[0] = txt
+	let s:prompt[0] = fnamemodify(bufname(winbufnr(winnr('#'))), ":t:r")
+	""if s:deftxt == '0' || ( s:deftxt == 1 && !s:ispath ) | retu | en
+	""let txt = s:deftxt
+	""if !type(txt)
+	""	let path = s:crfpath.s:lash(s:crfpath)
+	""	let txt = txt && !stridx(path, s:dyncwd) ? ctrlp#rmbasedir([path])[0] : ''
+	""en
 endf
 " ** Prt Actions {{{1
 " Editing {{{2
@@ -635,6 +637,10 @@ fu! s:PrtClear()
 endf
 
 fu! s:PrtAdd(char)
+  if s:firstChar
+    let s:firstChar = 0
+    cal s:BuildPrompt(1)
+  endif
 	unl! s:hstgot
 	let s:act_add = 1
 	let s:prompt[0] .= a:char
@@ -2260,6 +2266,9 @@ fu! ctrlp#init(type, ...)
 	cal ctrlp#setlines(s:settype(a:type))
 	cal s:SetDefTxt()
 	cal s:BuildPrompt(1)
+  let [s:prompt, s:matches] = [['', '', ''], 1]
+	cal s:BuildPrompt(0)
+  let s:firstChar = 1
 	if s:keyloop | cal s:KeyLoop() | en
 endf
 " - Autocmds {{{1
