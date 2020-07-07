@@ -2267,7 +2267,7 @@ fu! ctrlp#init(type, ...)
 	cal s:SetDefTxt()
 	cal s:BuildPrompt(1)
   let [s:prompt, s:matches] = [['', '', ''], 1]
-	cal s:BuildPrompt(0)
+  cal s:BuildPrompt(0)
   let s:firstChar = 1
 	if s:keyloop | cal s:KeyLoop() | en
 endf
